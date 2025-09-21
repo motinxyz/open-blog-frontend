@@ -3,7 +3,6 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { routes } from "./app/routes";
 import { Suspense } from "react";
 import CentralFallback from "./components/CentralFallback";
-// import { ThemeProvider } from "@material-tailwind/react";
 
 const router = createBrowserRouter(routes, {
   future: {
@@ -12,11 +11,9 @@ const router = createBrowserRouter(routes, {
 });
 function App() {
   return (
-    // <ThemeProvider>
     <Suspense fallback={<CentralFallback />}>
       <RouterProvider router={router} />
     </Suspense>
-    // </ThemeProvider>
   );
 }
 

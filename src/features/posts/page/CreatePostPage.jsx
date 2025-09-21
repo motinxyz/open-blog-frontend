@@ -1,5 +1,8 @@
 import React from "react";
 import { useFormStatus } from "react-dom";
+import { PostsContext } from "../context/PostsContext";
+import { use } from "react";
+import { useNavigate } from "react-router-dom";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -17,6 +20,9 @@ function SubmitButton() {
 }
 
 function CreateNewPost() {
+  const { addANewPost } = use(PostsContext);
+  const navigate = useNavigate();
+
   async function createPostAction(formData) {
     // This is a React Action. In a real app, you'd typically make an API call here.
     // We'll simulate a network delay to show the pending state.
@@ -28,7 +34,8 @@ function CreateNewPost() {
     };
 
     console.log("New Post Created:", post);
-    // In a real app, you might want to redirect the user or clear the form.
+    addANewPost(post);
+    navigate("/posts");
   }
 
   return (

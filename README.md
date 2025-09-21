@@ -1,6 +1,23 @@
-This is a simple blog project, where user will be able to create account, and post from their profile, and all posts will come to a stream/home for anyone with or without an account to see
+# Project Title
 
-- I'm still working on it
-- backend url: 
+Openblog - A Place to Offload Your Mind
 
-I'm using MERN stack to complete it.
+## Authors
+
+- [@motinxyz](https://www.github.com/motinxyz) motinsghs@gmail.com
+
+## Documentation
+
+This is the backend of an ongoing blogsite project where everyone can create an account and post about different issues or write or save all the issues in one place for them and others to learn it from targetted to find all problems in one place before that upcoming interview.
+
+I'm using MERN stack to complete the project
+
+Implemented features:
+Auth
+
+Features I'm working on:
+Ability to write a new Post, Fetch all written posts, Fetch their own posts
+
+## Related
+
+[Backend Codebase](https://github.com/motinxyz/open-blog-backend)
