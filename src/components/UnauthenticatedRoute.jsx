@@ -10,7 +10,8 @@ function UnauthenticatedRoute({ children }) {
   if (authState.isLoading) {
     return (
       <div className="m-3 flex h-full w-full items-center justify-center rounded-lg bg-gray-300">
-        <Loading />
+        {/* <Loading /> */}
+        <p>Auth Status Checking</p>
       </div>
     );
   }

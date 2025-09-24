@@ -1,48 +1,60 @@
-import { useReducer } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PostsContext } from "./PostsContext";
-import postsReducer from "./postReducer";
+import * as postsService from "../../../services/postsService";
 
 function PostsContextProvider({ children }) {
-  const [posts, dispatchPosts] = useReducer(postsReducer, [
-    {
-      _id: crypto.randomUUID(),
-      title: "How to style children in tailwindcss",
-      author: "Samad Altman",
-      text: "To address a children in tailwindcss, you have to use [&:*] this as the universal selector, this is to test the width this field can stretch to, lets fix it first.To address a children in tailwindcss, you have to use [&:*] this as the universal selector, this is to test the width this field can stretch to, lets fix it first.To address a children in tailwindcss, you have to use [&:*] this as the universal selector, this is to test the width this field can stretch to, lets fix it first",
-      createdAt: new Date().toLocaleDateString(),
-    },
-  ]);
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState(null);
 
-  const addANewPost = ({ title, text }) => {
-    const addANewPostAction = {
-      type: "ADD_NEW_POST",
-      payload: {
-        _id: crypto.randomUUID(),
-        title,
-        author: "Take From Session Object",
-        text,
-        createdAt: new Date().toLocaleDateString(),
-      },
-    };
-    dispatchPosts(addANewPostAction);
+  const fetchPosts = useCallback(async (cursor, sync = false) => {
+    setIsLoading(true);
+
+    try {
+      const data = await postsService.getPosts({ cursor }); // This still needs to be awaited for the state updates below
+      // Append new posts to the existing list or reset
+      if (sync) {
+        setPosts(data.posts);
+      } else {
+        // On initial load (cursor is null) or "fetch more", append/set posts
+        setPosts((prevPosts) =>
+          cursor ? [...prevPosts, ...data.posts] : data.posts,
+        );
+      }
+      setHasMore(data.hasMore);
+      setNextCursor(data.nextCursor);
+      return data; // Explicitly return the data
+    } catch (error) {
+      // In a real app, you'd want to show an error to the user
+      console.error("Error fetching posts:", error);
+      setHasMore(false);
+      throw error; // Re-throw the error so await can catch it if needed
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch initial posts on component mount
+  useEffect(() => {
+    fetchPosts(null);
+  }, [fetchPosts]);
+
+  // sync posts on manual refresh or on a new post creation
+  const refreshPosts = () => {
+    return fetchPosts(null, true);
   };
 
-  function deleteOnePost(postId) {
-    const deletePostAction = {
-      type: "DELETE_ONE_POST",
-      payload: {
-        _id: postId,
-        // also send author id
-      },
-    };
+  const fetchMorePosts = () => {
+    if (!isLoading && hasMore) {
+      fetchPosts(nextCursor);
+    }
+  };
 
-    dispatchPosts(deletePostAction);
-  }
+  const value = { posts, isLoading, hasMore, fetchMorePosts, refreshPosts };
 
   return (
-    <PostsContext.Provider value={{ posts, addANewPost, deleteOnePost }}>
-      {children}
-    </PostsContext.Provider>
+    <PostsContext.Provider value={value}>{children}</PostsContext.Provider>
   );
 }
 

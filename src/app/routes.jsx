@@ -1,14 +1,14 @@
 import PostStream from "../features/posts/page/PostStream";
 import Layout from "./Layout";
 import CentralFallback from "../components/CentralFallback";
-import React, { Suspense } from "react";
+import React from "react";
 import { ScaleLoader } from "react-spinners";
-import Loading from "../components/Loading";
 import Login from "../features/auth/page/Login";
 import Register from "../features/auth/page/Register";
 import Logout from "../components/Logout";
 import UnauthenticatedRoute from "../components/UnauthenticatedRoute";
 import AuthenticatedRoutes from "../components/AuthenticatedRoutes";
+import PostsLayout from "../features/posts/layout/PostsLayout";
 
 const CreatePostPage = React.lazy(
   () => import("../features/posts/page/CreatePostPage"),
@@ -21,24 +21,27 @@ export const routes = [
     errorElement: <CentralFallback />,
     children: [
       {
-        index: true,
-        element: <PostStream />,
+        element: <PostsLayout />,
         errorElement: <ScaleLoader />,
+        children: [
+          {
+            index: true,
+            element: <PostStream />,
+          },
+          {
+            path: "posts",
+            element: <PostStream />,
+          },
+          {
+            path: "posts/write",
+            element: (
+              <AuthenticatedRoutes>
+                <CreatePostPage />
+              </AuthenticatedRoutes>
+            ),
+          },
+        ],
       },
-      {
-        path: "posts",
-        element: <PostStream />,
-        errorElement: <ScaleLoader />,
-      },
-      {
-        path: "posts/new",
-        element: (
-          <Suspense fallback={<Loading />}>
-            <CreatePostPage />
-          </Suspense>
-        ),
-      },
-
       {
         path: "login",
         element: (

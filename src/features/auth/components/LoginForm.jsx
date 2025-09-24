@@ -1,9 +1,11 @@
 import { use, useActionState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { useFormStatus } from "react-dom";
 import { ScaleLoader } from "react-spinners";
+import { login } from "../../../services/authService";
+import Alert from "../../../components/Alert";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -25,13 +27,13 @@ function SubmitButton() {
 }
 
 function LoginForm() {
-  const { loginUser } = use(AuthContext);
   const navigate = useNavigate();
+  const { refreshAuthStatus } = use(AuthContext);
 
   async function formAction(previousState, formData) {
     const email = formData.get("email");
     const password = formData.get("password");
-    const result = await loginUser(email, password);
+    const result = await login(email, password);
     return result;
   }
 
@@ -44,9 +46,12 @@ function LoginForm() {
   // Navigate on successful login
   useEffect(() => {
     if (state.success) {
-      navigate("/posts");
+      // Refresh the global auth state before navigating to ensure UI consistency
+      refreshAuthStatus().then(() => {
+        navigate("/posts");
+      });
     }
-  }, [state.success, navigate]);
+  }, [state.success, navigate, refreshAuthStatus]);
 
   return (
     <form
@@ -57,15 +62,7 @@ function LoginForm() {
         Login
       </h1>
 
-      {/* Display the main error message  */}
-      {state.error && !state.errors.length && (
-        <div
-          className="w-full rounded-md border border-red-400 bg-red-100 p-3 text-center text-sm text-red-700"
-          role="alert"
-        >
-          {state.error}
-        </div>
-      )}
+      <Alert message={state.error && !state.errors.length ? state.error : null} />
 
       <div className="my-3 w-full">
         <input

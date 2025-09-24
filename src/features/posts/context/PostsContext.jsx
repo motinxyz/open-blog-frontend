@@ -2,6 +2,8 @@ import { createContext } from "react";
 
 export const PostsContext = createContext({
   posts: [],
-  addANewPost: () => {},
-  deleteOnePost: () => {},
+  isLoading: true,
+  hasMore: false,
+  fetchMorePosts: () => {},
+  refreshPosts: () => {},
 });

@@ -1,7 +1,8 @@
-import React, { use, useActionState, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
+import React, { useActionState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormStatus } from "react-dom";
+import { register } from "../../../services/authService";
+import Alert from "../../../components/Alert";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -18,44 +19,61 @@ function SubmitButton() {
 }
 
 function RegistrationForm() {
-  const { registerUser } = use(AuthContext);
   const navigate = useNavigate();
 
   async function formAction(previousState, formData) {
-    const firstName = formData.get("firstName");
-    const lastName = formData.get("lastName");
-    const email = formData.get("email");
+    const firstName = formData.get("firstName")?.trim();
+    const lastName = formData.get("lastName")?.trim();
+    const email = formData.get("email")?.trim();
     const password = formData.get("password");
     const termsAccepted = formData.get("termsAccepted") ? true : false;
-    if (!termsAccepted) {
-      return {
-        success: false,
-        error: "You must agree to the Terms & Conditions",
-        errors: [
-          {
-            type: "field",
-            msg: "terms must be accepted",
-            path: "termsAccepted",
-            location: "body",
-          },
-        ],
-      };
-    }
-    const result = await registerUser(
+    // if (!termsAccepted) {
+    //   return {
+    //     success: false,
+    //     error: "You must agree to the Terms & Conditions",
+    //     errors: [
+    //       {
+    //         type: "field",
+    //         value: false,
+    //         msg: "terms must be accepted",
+    //         path: "termsAccepted",
+    //         location: "body",
+    //       },
+    //     ],
+    //   };
+    // }
+
+    // console.log("before api method call");
+    const result = await register({
       firstName,
       lastName,
       email,
       password,
       termsAccepted,
-    );
-    return result;
+    });
+
+    // console.log("after api method call");
+    // console.log("inside form action", result);
+    return {
+      ...result,
+      preValues: [
+        { field: "firstName", value: firstName },
+        { field: "lastName", value: lastName },
+        { field: "email", value: email },
+        { field: "password", value: password },
+        { field: "termsAccepted", value: termsAccepted },
+      ],
+    };
   }
 
   const [state, dispatchFormAction] = useActionState(formAction, {
     success: false,
     error: null,
     errors: [],
+    preValues: [],
   });
+
+  console.log("state.errors", state);
 
   useEffect(() => {
     if (state.success) {
@@ -73,22 +91,17 @@ function RegistrationForm() {
           Register
         </h1>
 
-        {state.error && (
-          <div
-            className="w-full rounded-md border border-red-400 bg-red-100 p-3 text-center text-sm text-red-700"
-            role="alert"
-          >
-            {state.error}
-          </div>
-        )}
+        <Alert message={state.error} />
         <div className="mt-5 w-full">
           <input
             type="text"
             placeholder="first name.."
             name="firstName"
+            defaultValue={
+              state.preValues?.find((val) => val.field === "firstName")?.value
+            }
             aria-label="write your first name"
             className="w-full rounded-md border border-gray-700 px-4 py-3"
-            pattern="[A-Za-z+]"
           />
 
           {state.errors?.find((err) => err.path === "firstName") && (
@@ -103,9 +116,11 @@ function RegistrationForm() {
             type="text"
             placeholder="last name.."
             name="lastName"
+            defaultValue={
+              state.preValues?.find((val) => val.field === "lastName")?.value
+            }
             aria-label="write your last name"
             className="w-full rounded-md border border-gray-700 px-4 py-3"
-            pattern="[A-Za-z+]"
           />
           {state.errors?.find((err) => err.path === "lastName") && (
             <p className="mt-1 text-sm text-red-600">
@@ -118,6 +133,9 @@ function RegistrationForm() {
             type="text"
             placeholder="email.."
             name="email"
+            defaultValue={
+              state.preValues?.find((val) => val.field === "email")?.value
+            }
             aria-label="write your email address"
             className="w-full rounded-md border border-gray-700 px-4 py-3"
           />
@@ -133,6 +151,9 @@ function RegistrationForm() {
             name="password"
             id="password"
             placeholder="password.."
+            defaultValue={
+              state.preValues?.find((val) => val.field === "password")?.value
+            }
             aria-label="Write your password"
             className="w-full rounded-md border border-gray-700 px-4 py-3"
           />
@@ -148,9 +169,16 @@ function RegistrationForm() {
             type="checkbox"
             name="termsAccepted"
             id="termsAccepted"
-            className="mr-2"
+            className="mr-2 cursor-pointer overflow-hidden accent-blue-600"
+            defaultChecked={
+              state.preValues?.find((val) => val.field === "termsAccepted")
+                ?.value
+            }
           />
-          <label htmlFor="termsAccepted" className="text-gray-700">
+          <label
+            htmlFor="termsAccepted"
+            className="cursor-pointer text-gray-700"
+          >
             I agree to the{" "}
           </label>
           <Link
